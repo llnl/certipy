@@ -168,7 +168,9 @@ class TLSFile:
 
         self.file_path = file_path
         self.containing_dir = os.path.dirname(self.file_path)
-        self.encoding = serialization.Encoding(encoding)
+        if isinstance(encoding, str):
+            encoding = getattr(serialization.Encoding, encoding)
+        self.encoding = encoding
         self.file_type = file_type
         self.x509 = x509
 
