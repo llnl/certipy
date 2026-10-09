@@ -522,7 +522,7 @@ class CertStore:
 
         record = self.get_record(common_name)
         if fields is not None:
-            for field, value in fields:
+            for field, value in fields.items():
                 record[field] = value
         self.save()
         return record

@@ -229,6 +229,49 @@ def test_certipy_store(signed_key_pair, record):
         assert signee_record["parent_ca"] == common_name
 
 
+def test_certipy_store_update_record():
+    """update_record iterated the kwargs dict, which yields field names.
+
+    Unpacking a name into (field, value) raised ValueError for any name whose
+    length is not 2, and silently wrote a single character key for the ones
+    that are, so no call to this method could work.
+    """
+    with TemporaryDirectory() as td:
+        common_name = "foo"
+        store = CertStore(containing_dir=td)
+        store.add_record(common_name)
+
+        updated = store.update_record(common_name, parent_ca="bar", serial=7)
+
+        assert updated["parent_ca"] == "bar"
+        assert updated["serial"] == 7
+        assert store.get_record(common_name)["parent_ca"] == "bar"
+
+
+def test_certipy_store_update_record_two_letter_field():
+    """A two character field name used to be split into a key and a value."""
+    with TemporaryDirectory() as td:
+        common_name = "foo"
+        store = CertStore(containing_dir=td)
+        store.add_record(common_name)
+
+        updated = store.update_record(common_name, ca="authority")
+
+        assert updated["ca"] == "authority"
+        assert "c" not in updated
+
+
+def test_certipy_store_update_record_no_fields():
+    with TemporaryDirectory() as td:
+        common_name = "foo"
+        store = CertStore(containing_dir=td)
+        store.add_record(common_name)
+
+        before = dict(store.get_record(common_name))
+
+        assert store.update_record(common_name) == before
+
+
 def test_certipy():
     # FIXME: unfortunately similar names...either separate tests or rename
     with TemporaryDirectory() as td:
